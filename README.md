@@ -1,7 +1,7 @@
-基于 ansible 的 WeBase 自动化部署
+基于 ansible 的 WeBASE 自动化部署
 =========
 
-自动化部署 [WeBase](https://github.com/WeBankFinTech/WeBASE) 区块链通用组件。
+自动化部署 [WeBASE](https://github.com/WeBankFinTech/WeBASE) 区块链通用组件。
 
 ansible 执行环境
 --------------
@@ -13,11 +13,11 @@ ansible 执行环境
 * sshpass
 * docker
 
-WeBase 运行环境
+WeBASE 运行环境
 --------------
 
 * 已部署了 FISCO BCOS 的节点。推荐使用[一键生成 FISCO-BCOS 企业级架构部署](https://github.com/newtouch-cloud/ansible-for-fisco-bcos)。
-* 其它依赖关系请查看 [WeBase 官方文档](https://webasedoc.readthedocs.io/zh_CN/latest/docs/WeBASE-Install/index.html)
+* 其它依赖关系请查看 [WeBASE 官方文档](https://webasedoc.readthedocs.io/zh_CN/latest/docs/WeBASE-Install/index.html)
 
 Role 变量
 --------

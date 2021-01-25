@@ -3,11 +3,13 @@
 # @Email:  haibin.li@newtouch.com
 # @Filename: pre_tasks.yml
 # @Last modified by:   haibin
-# @Last modified time: 2021-01-25T12:35:37+08:00
+# @Last modified time: 2021-01-25T13:20:30+08:00
 # @Copyright: Copyright 2020 the original author or authors.
 
 - name: 安装依赖工具
+  become: true
   package:
-    - git
-    - "{{ (ansible_python.version.major == 3) | ternary('python3', 'python') }}-pip"
-    - "{{ (ansible_python.version.major == 3) | ternary('python3', 'python') }}-docker"
+    name:
+      - git
+      - python-pip
+      - python-docker

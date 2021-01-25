@@ -1,2 +1,19 @@
+# @Author: Haibin Lee <haibin>
+# @Date:   2021-01-25T13:07:53+08:00
+# @Email:  haibin.li@newtouch.com
+# @Filename: main.yml
+# @Last modified by:   haibin
+# @Last modified time: 2021-01-25T13:36:43+08:00
+# @Copyright: Copyright 2020 the original author or authors.
+
+
+
 ---
 # defaults file for ansible-webase-role
+
+# 是否构建 Docker 容器镜像
+build_docker_images: true
+
+# WeBASE Sign 配置
+webase_sign:
+  gradle_version: jdk8 # 使用的 gradle 版本。
