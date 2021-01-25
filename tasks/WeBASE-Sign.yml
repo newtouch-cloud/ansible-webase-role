@@ -1,0 +1,36 @@
+# @Author: Haibin Lee <haibin>
+# @Date:   2021-01-25T12:27:13+08:00
+# @Email:  haibin.li@newtouch.com
+# @Filename: WeBASE-Sign.yml
+# @Last modified by:   haibin
+# @Last modified time: 2021-01-25T12:46:23+08:00
+# @Copyright: Copyright 2020 the original author or authors.
+
+- name: 拉取代码
+  git:
+    repo: https://github.com/WeBankFinTech/WeBASE-Sign.git
+    dest: /opt/WeBASE-Sign
+    depth: 1
+    force: true
+
+- name: "创建 /opt/WeBASE-Sign/.m2"
+  file:
+    path: "/opt/WeBASE-Sign/.m2"
+    state: directory
+    owner: 1000
+    group: 1000
+    recurse: true
+
+- name: 编译代码
+  docker_container:
+    name: "gradle:jdk8"
+    image: "{{ image | default(default.mavenImage) }}"
+    env:
+      TIME_ZONE: Asia/Shanghai
+    volumes:
+      - "/opt/WeBASE-Sign/.m2:/root/.m2"
+      - "/opt/WeBASE-Sign:/home/gradle/project"
+    working_dir: "/home/gradle/project"
+    detach: no
+    cleanup: yes
+    command: "gradle build -x test"
