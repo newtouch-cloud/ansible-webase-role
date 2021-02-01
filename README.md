@@ -34,7 +34,7 @@ WeBASE 运行环境
 Role 变量
 --------
 
-请查看 `defaults/main.yml` 内的说明。
+请查看 `defaults/main.yml` 文件内的注释说明。
 
 Playbook 用例
 ------------
@@ -64,22 +64,22 @@ webase-5 ansible_host=172.17.8.105
 webase-6 ansible_host=172.17.8.106
 
 # WeBASE-Front 群组内节点必须是已经部署了 fisco bcos 节点服务。
-[webase_front]
+[group_webase_front]
 webase-[1:6]
 
-[webase_sign]
+[group_webase_sign]
 webase-6
 ```
 
 Playbook 示例
 
 ```
-- hosts: webase_front
+- hosts: group_webase_sign
   vars:
-    project: WeBASE-Front
+    project: webase_sign
   roles:
-     - name: newtouch.webase
-       tags: front
+     - role: newtouch.webase
+       tags: sign
 ```
 
 License
