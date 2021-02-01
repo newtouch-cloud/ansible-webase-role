@@ -3,7 +3,7 @@
 # @Email:  haibin.li@newtouch.com
 # @Filename: main.yml
 # @Last modified by:   haibin
-# @Last modified time: 2021-01-25T13:36:43+08:00
+# @Last modified time: 2021-02-01T20:53:59+08:00
 # @Copyright: Copyright 2020 the original author or authors.
 
 
@@ -11,9 +11,48 @@
 ---
 # defaults file for ansible-webase-role
 
+# 构建路径
+webase_build_dir: "{{ ansible_env.HOME }}/Workspaces"
+
 # 是否构建 Docker 容器镜像
-build_docker_images: true
+webase_build_docker_image: true
+
+# Docker 镜像名称前缀，可用于填写私有 repo 地址。默认为空。
+webase_docker_image_prefix: ''
+
+# 是否推送镜像到仓库。
+webase_push_docker_image: false
 
 # WeBASE Sign 配置
 webase_sign:
+  enabled: true
+  repo: https://github.com/WeBankFinTech/WeBASE-Sign.git
+  branch: master
   gradle_version: jdk8 # 使用的 gradle 版本。
+  application_config: # 按照 application.yml 格式编写，可自定义参数。自动与默认配置合并。
+    server:
+      port: 5004
+    spring:
+      datasource:
+        url: "jdbc:mysql://127.0.0.1:3306/webasesign?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8"
+        username: "dbUsername"
+        password: "dbPassword"
+    constant:
+      aesKey: "{{ lookup('password', inventory_dir + '/credentials/webase_sign_aeskey length=16 chars=ascii_letters,digits') }}"
+  docker_cmd: "java -Dfile.encoding=UTF-8 -Xmx256m -Xms256m -Xmn128m -Xss512k -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/heap_error.log -cp conf/:apps/*:lib/*  com.webank.webase.sign.Application"
+
+# WeBASE Front 配置
+webase_front:
+  enabled: true
+  repo: https://github.com/WeBankFinTech/WeBASE-Front.git
+  branch: master
+  gradle_version: jdk8 # 使用的 gradle 版本。
+  fisco_bcos_node_dir: '' # 指定 FISCO BCOS 节点目录。默认会根据 fisco-bcos 进程获取运行目录。
+  application_config: # 按照 application.yml 格式编写，可自定义参数。自动与默认配置合并。
+    server:
+      port: 5003
+    spring:
+      datasource:
+        url: "jdbc:h2:file:./h2/webasefront;DB_CLOSE_ON_EXIT=FALSE"
+    constant:
+      aesKey: "{{ lookup('password', inventory_dir + '/credentials/webase_sign_aeskey length=16 chars=ascii_letters,digits') }}"

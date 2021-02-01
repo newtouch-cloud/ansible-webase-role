@@ -1,0 +1,39 @@
+# @Author: Haibin Lee <haibin>
+# @Date:   2021-02-01T13:42:28+08:00
+# @Email:  haibin.li@newtouch.com
+# @Filename: application_config.yml
+# @Last modified by:   haibin
+# @Last modified time: 2021-02-01T20:12:50+08:00
+# @Copyright: Copyright 2020 the original author or authors.
+
+- name: "{{ project | upper }} | 建立 {{ webase_build_dir }}/{{ project }}/dist/conf 目录"
+  copy:
+    src: "{{ webase_build_dir }}/{{ project }}/dist/conf_template/"
+    dest: "{{ webase_build_dir }}/{{ project }}/dist/conf/"
+    remote_src: true
+  when: not __conf_path.stat.exists
+
+- name: "{{ project | upper }} | 读取 {{ webase_build_dir }}/{{ project }}/dist/conf/application.yml 内容"
+  slurp:
+    path: "{{ webase_build_dir }}/{{ project }}/dist/conf/application.yml"
+  register: __application_data
+
+- name: "{{ project | upper }} | 内容解码"
+  set_fact:
+    application_data: "{{ __application_data['content'] | b64decode | from_yaml }}"
+
+- name: "{{ project | upper }} | 合并配置"
+  set_fact:
+    new_application_data: "{{ application_data | combine(newdata, recursive=True) }}"
+  vars:
+    newdata: "{{ lookup('vars', project).application_config }}"
+
+- name: "{{ project | upper }} | 展示新配置"
+  debug:
+    msg: "{{ new_application_data | from_yaml }}"
+
+- name: "{{ project | upper }} | 更新 {{ webase_build_dir }}/{{ project }}/dist/conf/application.yml"
+  copy:
+    content: "{{ new_application_data | to_nice_yaml(indent=2) }}"
+    dest: "{{ webase_build_dir }}/{{ project }}/dist/conf/application.yml"
+  register: __application_st

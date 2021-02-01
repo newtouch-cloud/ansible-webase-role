@@ -1,0 +1,27 @@
+# @Author: Haibin Lee <haibin>
+# @Date:   2021-01-29T17:55:43+08:00
+# @Email:  haibin.li@newtouch.com
+# @Filename: docker_image.yml
+# @Last modified by:   haibin
+# @Last modified time: 2021-02-01T19:55:15+08:00
+# @Copyright: Copyright 2020 the original author or authors.
+
+- name: "{{ project | upper }} | 更新 {{ webase_build_dir }}/{{ project }}/dist/Dockerfile"
+  template:
+    src: gradle-Dockerfile.j2
+    dest: "{{ webase_build_dir }}/{{ project }}/dist/Dockerfile"
+
+- name: "{{ project | upper }} | 更新 {{ webase_build_dir }}/{{ project }}/dist/.dockerignore"
+  copy:
+    src: .dockerignore
+    dest: "{{ webase_build_dir }}/{{ project }}/dist/.dockerignore"
+
+- name: "{{ project | upper }} | 构建 {{ project }} 镜像"
+  docker_image:
+    name: "{{ webase_docker_image_prefix | default(omit) }}{{ project }}"
+    build:
+      path: "{{ webase_build_dir }}/{{ project }}/dist/"
+      nocache: true
+      pull: false
+    source: build
+    force_source: true

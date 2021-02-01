@@ -1,0 +1,32 @@
+# @Author: Haibin Lee <haibin>
+# @Date:   2021-01-29T17:00:47+08:00
+# @Email:  haibin.li@newtouch.com
+# @Filename: gradle.yml
+# @Last modified by:   haibin
+# @Last modified time: 2021-02-01T19:55:07+08:00
+# @Copyright: Copyright 2020 the original author or authors.
+
+- name: "{{ project | upper }} | 拉取代码"
+  git:
+    repo: "{{ lookup('vars', project).repo }}"
+    dest: "{{ webase_build_dir }}/{{ project }}"
+    depth: 1
+    force: true
+    version: "{{ lookup('vars', project).branch }}"
+  register: __git_st
+
+- name: "{{ project | upper }} | 使用 gradle:{{ lookup('vars', project).gradle_version }} 容器编译代码"
+  docker_container:
+    name: "build-webase"
+    image: "gradle:{{ lookup('vars', project).gradle_version }}"
+    container_default_behavior: no_defaults
+    user: "1000"
+    env:
+      TIME_ZONE: Asia/Shanghai
+    volumes:
+      - "{{ webase_build_dir }}/{{ project }}:/home/gradle/project"
+    working_dir: "/home/gradle/project"
+    detach: no
+    cleanup: yes
+    command: "gradle build -x test"
+  when: (__git_st is changed) or (not __dist_path.stat.exists)

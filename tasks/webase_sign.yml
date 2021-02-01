@@ -1,0 +1,14 @@
+# @Author: Haibin Lee <haibin>
+# @Date:   2021-01-25T12:27:13+08:00
+# @Email:  haibin.li@newtouch.com
+# @Filename: WeBASE-Sign.yml
+# @Last modified by:   haibin
+# @Last modified time: 2021-02-01T13:47:22+08:00
+# @Copyright: Copyright 2020 the original author or authors.
+
+- include_tasks: gradle.yml
+
+- include_tasks: application_config.yml
+
+- include_tasks: docker_image.yml
+  when: webase_build_docker_image

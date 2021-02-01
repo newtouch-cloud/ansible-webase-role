@@ -3,12 +3,15 @@
 # @Email:  haibin.li@newtouch.com
 # @Filename: test.yml
 # @Last modified by:   haibin
-# @Last modified time: 2021-01-25T13:17:45+08:00
+# @Last modified time: 2021-02-01T13:15:21+08:00
 # @Copyright: Copyright 2020 the original author or authors.
 
 
 
 ---
 - hosts: localhost
+  vars:
+    project: webase_sign
   roles:
-    - "../../ansible-webase-role"
+    - name: "../../ansible-webase-role"
+      tags: sign

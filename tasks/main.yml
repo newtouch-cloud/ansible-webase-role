@@ -3,7 +3,7 @@
 # @Email:  haibin.li@newtouch.com
 # @Filename: main.yml
 # @Last modified by:   haibin
-# @Last modified time: 2021-01-25T12:36:22+08:00
+# @Last modified time: 2021-02-01T13:38:02+08:00
 # @Copyright: Copyright 2020 the original author or authors.
 
 
@@ -11,6 +11,6 @@
 ---
 # tasks file for ansible-webase-role
 
-- import_tasks: pre_tasks.yml
+- include_tasks: pre_check.yml
 
-- include_tasks: WeBASE-Sign.yml
+- include_tasks: "{{ project }}.yml"
