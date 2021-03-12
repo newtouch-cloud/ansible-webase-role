@@ -3,7 +3,7 @@
 # @Email:  haibin.li@newtouch.com
 # @Filename: application_config.yml
 # @Last modified by:   haibin
-# @Last modified time: 2021-02-01T20:12:50+08:00
+# @Last modified time: 2021-02-03T20:55:07+08:00
 # @Copyright: Copyright 2020 the original author or authors.
 
 - name: "{{ project | upper }} | 建立 {{ webase_build_dir }}/{{ project }}/dist/conf 目录"
@@ -13,27 +13,37 @@
     remote_src: true
   when: not __conf_path.stat.exists
 
-- name: "{{ project | upper }} | 读取 {{ webase_build_dir }}/{{ project }}/dist/conf/application.yml 内容"
+- name: "{{ project | upper }} | 读取 {{ webase_build_dir }}/{{ project }}/dist/conf_template/application.yml 内容"
   slurp:
-    path: "{{ webase_build_dir }}/{{ project }}/dist/conf/application.yml"
-  register: __application_data
+    path: "{{ webase_build_dir }}/{{ project }}/dist/conf_template/application.yml"
+  register: __application_config
 
-- name: "{{ project | upper }} | 内容解码"
+- name: "{{ project | upper }} | application.yml 合并配置"
   set_fact:
-    application_data: "{{ __application_data['content'] | b64decode | from_yaml }}"
-
-- name: "{{ project | upper }} | 合并配置"
-  set_fact:
-    new_application_data: "{{ application_data | combine(newdata, recursive=True) }}"
+    new_application_config: "{{ __application_config.content | b64decode | from_yaml | combine(new_config, recursive=True) }}"
   vars:
-    newdata: "{{ lookup('vars', project).application_config }}"
+    new_config: "{{ project_vars.application_config }}"
 
-- name: "{{ project | upper }} | 展示新配置"
+- name: "{{ project | upper }} | conf/application.yml 内容如下"
   debug:
-    msg: "{{ new_application_data | from_yaml }}"
+    msg: "{{ new_application_config }}"
 
-- name: "{{ project | upper }} | 更新 {{ webase_build_dir }}/{{ project }}/dist/conf/application.yml"
+- name: "{{ project | upper }} | 更新 {{ webase_build_dir }}/{{ project }}/dist/conf/application.yml.j2"
   copy:
-    content: "{{ new_application_data | to_nice_yaml(indent=2) }}"
+    content: "{{ new_application_config | to_nice_yaml(indent=2, width=1337) }}"
+    dest: "{{ webase_build_dir }}/{{ project }}/dist/conf/application.yml.j2"
+
+- name: "{{ project | upper }} | 生成 {{ webase_build_dir }}/{{ project }}/dist/conf/application.yml"
+  template:
+    src: "{{ webase_build_dir }}/{{ project }}/dist/conf/application.yml.j2"
     dest: "{{ webase_build_dir }}/{{ project }}/dist/conf/application.yml"
-  register: __application_st
+    backup: true
+  register: __application_update_st
+
+- name: "{{ project | upper }} | 压缩 {{ webase_build_dir }}/{{ project }}/dist"
+  archive:
+    format: bz2
+    path: "{{ webase_build_dir }}/{{ project }}/dist/*"
+    dest: "{{ webase_build_dir }}/{{ project }}_dist_{{ release_version }}.tar.bz2"
+    exclude_path:
+      - "{{ webase_build_dir }}/{{ project }}/dist/conf_template"

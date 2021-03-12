@@ -1,0 +1,47 @@
+# @Author: Haibin Lee <haibin>
+# @Date:   2021-02-01T13:32:49+08:00
+# @Email:  haibin.li@newtouch.com
+# @Filename: pre_check.yml
+# @Last modified by:   haibin
+# @Last modified time: 2021-02-03T18:20:14+08:00
+# @Copyright: Copyright 2020 the original author or authors.
+
+- name: "{{ project | upper }} | 读取 role 默认变量与 inventory 自定义变量"
+  slurp:
+    path: "{{ item }}"
+  with_items:
+    - "{{ inventory_dir }}/group_vars/all.yml"
+    - "{{ role_path }}/defaults/main.yml"
+  register: __application_data
+
+- name: "{{ project | upper }} | 变量内容解码"
+  set_fact:
+    role_vars: "{{ __application_data.results | selectattr('source', '==', role_path + '/defaults/main.yml') | map(attribute='content') | b64decode | from_yaml }}"
+    inventory_vars: "{{ __application_data.results | selectattr('source', '==', inventory_dir + '/group_vars/all.yml') | map(attribute='content') | b64decode | from_yaml }}"
+
+- name: "{{ project | upper }} | 变量内容合并"
+  set_fact:
+    project_vars: "{{ role_vars[project] | combine(inventory_vars[project], recursive=True) }}"
+
+- name: "{{ project | upper }} | 检查 {{ webase_build_dir }}/{{ project }}/dist 目录是否存在"
+  stat:
+    path: "{{ webase_build_dir }}/{{ project }}/dist"
+  register: __dist_path
+
+- name: "{{ project | upper }} | 检查 {{ webase_build_dir }}/{{ project }}/dist/conf 目录是否存在"
+  stat:
+    path: "{{ webase_build_dir }}/{{ project }}/dist/conf"
+  register: __conf_path
+
+- name: "{{ project | upper }} | 获取 {{ project }} 代码"
+  git:
+    repo: "{{ project_vars.repo }}"
+    dest: "{{ webase_build_dir }}/{{ project }}"
+    depth: 1
+    force: true
+    version: "{{ project_vars.branch }}"
+  register: __git_st
+
+- name: "{{ project | upper }} | 设置动态变量"
+  set_fact:
+    release_version: "{{ lookup('file', webase_build_dir + '/' + project + '/release_note.txt', errors='ignore') | default('latest') | trim }}"

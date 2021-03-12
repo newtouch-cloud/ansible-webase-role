@@ -3,22 +3,13 @@
 # @Email:  haibin.li@newtouch.com
 # @Filename: gradle.yml
 # @Last modified by:   haibin
-# @Last modified time: 2021-02-01T19:55:07+08:00
+# @Last modified time: 2021-02-03T18:20:08+08:00
 # @Copyright: Copyright 2020 the original author or authors.
 
-- name: "{{ project | upper }} | 拉取代码"
-  git:
-    repo: "{{ lookup('vars', project).repo }}"
-    dest: "{{ webase_build_dir }}/{{ project }}"
-    depth: 1
-    force: true
-    version: "{{ lookup('vars', project).branch }}"
-  register: __git_st
-
-- name: "{{ project | upper }} | 使用 gradle:{{ lookup('vars', project).gradle_version }} 容器编译代码"
+- name: "{{ project | upper }} | 使用 gradle:{{ project_vars.gradle_version }} 容器编译代码"
   docker_container:
     name: "build-webase"
-    image: "gradle:{{ lookup('vars', project).gradle_version }}"
+    image: "gradle:{{ project_vars.gradle_version }}"
     container_default_behavior: no_defaults
     user: "1000"
     env:

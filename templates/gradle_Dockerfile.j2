@@ -1,0 +1,7 @@
+FROM {{ project_vars.docker_image_from | default('gradle:' + project_vars.gradle_version) }}
+
+ADD . /opt/{{ project }}
+RUN mkdir -p /opt/{{ project }}/log
+WORKDIR /opt/{{ project }}
+
+CMD {{ project_vars.docker_cmd }}

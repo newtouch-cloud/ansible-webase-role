@@ -3,7 +3,7 @@
 # @Email:  haibin.li@newtouch.com
 # @Filename: main.yml
 # @Last modified by:   haibin
-# @Last modified time: 2021-02-01T20:53:59+08:00
+# @Last modified time: 2021-02-18T14:04:49+08:00
 # @Copyright: Copyright 2020 the original author or authors.
 
 
@@ -18,15 +18,18 @@ webase_build_dir: "{{ ansible_env.HOME }}/Workspaces"
 webase_build_docker_image: true
 
 # Docker 镜像名称前缀，可用于填写私有 repo 地址。默认为空。
-webase_docker_image_prefix: ''
+webase_docker_private_repo: ''
 
 # 是否推送镜像到仓库。
 webase_push_docker_image: false
 
+# WeBASE Sign AES KEY，自动生成。也可手动改为指定字符串。
+webase_aesKey: "{{ lookup('password', inventory_dir + '/credentials/webase_sign_aeskey length=16 chars=ascii_letters,digits') }}"
+
 # WeBASE Sign 配置
 webase_sign:
   enabled: true
-  repo: https://github.com/WeBankFinTech/WeBASE-Sign.git
+  repo: https://gitee.com/WeBank/WeBASE-Sign.git
   branch: master
   gradle_version: jdk8 # 使用的 gradle 版本。
   application_config: # 按照 application.yml 格式编写，可自定义参数。自动与默认配置合并。
@@ -38,15 +41,16 @@ webase_sign:
         username: "dbUsername"
         password: "dbPassword"
     constant:
-      aesKey: "{{ lookup('password', inventory_dir + '/credentials/webase_sign_aeskey length=16 chars=ascii_letters,digits') }}"
+      aesKey: "{{ webase_aesKey }}"
   docker_cmd: "java -Dfile.encoding=UTF-8 -Xmx256m -Xms256m -Xmn128m -Xss512k -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/heap_error.log -cp conf/:apps/*:lib/*  com.webank.webase.sign.Application"
 
 # WeBASE Front 配置
 webase_front:
   enabled: true
-  repo: https://github.com/WeBankFinTech/WeBASE-Front.git
+  repo: https://gitee.com/WeBank/WeBASE-Front.git
   branch: master
   gradle_version: jdk8 # 使用的 gradle 版本。
+  docker_image_from: openjdk:oracle
   fisco_bcos_node_dir: '' # 指定 FISCO BCOS 节点目录。默认会根据 fisco-bcos 进程获取运行目录。
   application_config: # 按照 application.yml 格式编写，可自定义参数。自动与默认配置合并。
     server:
@@ -55,4 +59,24 @@ webase_front:
       datasource:
         url: "jdbc:h2:file:./h2/webasefront;DB_CLOSE_ON_EXIT=FALSE"
     constant:
-      aesKey: "{{ lookup('password', inventory_dir + '/credentials/webase_sign_aeskey length=16 chars=ascii_letters,digits') }}"
+      aesKey: "{{ webase_aesKey }}"
+    sdk:
+      ip: "{{ ansible_host }}"
+  docker_cmd: |
+    java -Djdk.tls.namedGroups="secp256k1" \
+      -Dfile.encoding=UTF-8 \
+      -Xmx256m -Xms256m -Xmn128m -Xss512k \
+      -XX:MetaspaceSize=128m \
+      -XX:MaxMetaspaceSize=256m \
+      -Djava.library.path=$(pwd)/ \
+      -cp 'conf/:apps/*:lib/*' \
+      com.webank.webase.front.Application
+
+# WeBASE Web 配置
+webase_web:
+  enabled: true
+  repo: https://github.com/WeBankFinTech/WeBASE-Web.git
+  nginx_config:
+    # domain: "" # 域名访问配置
+    port: 5000
+    node_manager: 10.0.0.1:5001 # 节点管理服务ip和端口
